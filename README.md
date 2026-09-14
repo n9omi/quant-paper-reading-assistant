@@ -1,4 +1,4 @@
-# Paper Analyzer
+# Quant Paper Analyzer and Reading Assistant
 
 A RAG-powered research AI that helps you deeply understand quant finance, applied math, and ML academic papers.
 
