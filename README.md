@@ -1,100 +1,58 @@
-# Quant Paper Analyzer and Reading Assistant
+# Quant Paper Reader
 
-A RAG-powered research AI that helps you deeply understand quant finance, applied math, and ML academic papers.
+Drop in a technical paper (quant finance, economics, applied math, statistics, ML) and get:
 
-Upload PDFs → get intuitive breakdowns of the math and economics → build a searchable knowledge base → ask questions across your entire library.
+- **Brief** — a one-line TL;DR, what the paper does, findings, practical implications, limits, and the story of the paper
+- **Concepts** — every math and applied concept explained at three levels (Simple / Undergrad / Rigorous), with a mental model, a common pitfall, the Python tool you'd use, and a suggested study order
+- **Equations** — the key equations rendered as real math, with each symbol explained in plain English
+- **Method** — data, models, and the pipeline from data to results
+- **Replicate** — a phased plan, a suggested repo layout, and a button that writes a runnable Python starter script (simulated data, public market data via yfinance, or your own CSV)
+- **Extend** — improvement ideas rated by impact, difficulty and portfolio value
+- **Ask** — questions about one paper or your whole library
 
-## Features
+**Live app:** https://n9omi.github.io/quant-paper-reading-assistant/
 
-- **6-tab analysis** for every paper: Deep Dive, Theory, Methods, Findings, Replication Plan, Improvements
-- **Three-depth explanations**: Simple (ELI5) → Undergraduate → Rigorous for every concept
-- **Multi-paper knowledge base**: upload multiple papers and ask cross-paper questions
-- **Per-paper AI Q&A**: ask follow-up questions about any paper in your library
-- **Replication plans**: phased roadmaps with Python libraries, difficulty ratings, and GitHub repo blueprints
+## Two ways to use it
 
-## Quick Start
+| | Inside Claude | GitHub Pages / local |
+|---|---|---|
+| How | Open the published Claude artifact | Open the link above, or `index.html` |
+| Key | None — uses your Claude account | Your own Anthropic API key, entered once |
+| Where the key lives | — | Only in your browser's local storage; sent only to Anthropic |
+| Paper input | PDF upload, pasted text | PDF upload, pasted text, **paper link or arXiv ID** |
+| How Claude reads it | Extracted text (long papers are shortened in the middle to fit) | The full PDF, with prompt caching |
 
-### Prerequisites
+Get an API key at https://console.anthropic.com/settings/keys. A typical paper costs a few cents.
 
-- [Node.js](https://nodejs.org/) 18+
-- An [Anthropic API key](https://console.anthropic.com/)
+## How it works
 
-> **Note**: When running inside Claude.ai as an artifact, no API key is needed — it's handled automatically. The API key is only required when you run this locally as a standalone app.
+It is one self-contained HTML file with no build step and no server.
 
-### Local Development
+1. **pdf.js** extracts the text in your browser; the reference list is dropped.
+2. Claude is asked for the analysis in three smaller JSON parts (brief, concepts, plan). The brief comes first so you can start reading while the rest is written. Each part can be retried on its own.
+3. Answers are parsed defensively (code fences, stray text, and un-escaped LaTeX backslashes are repaired).
+4. **MathJax** renders the equations.
+5. Your library is saved in your browser, so it survives a reload.
 
-```bash
-git clone https://github.com/YOUR_USERNAME/paper-analyzer.git
-cd paper-analyzer
-npm install
-npm run dev
-```
-
-Opens at `http://localhost:3000`. Upload any academic PDF to test.
-
-### Deploy to Vercel (free)
-
-```bash
-npm install -g vercel
-vercel
-```
-
-Follow the prompts. Your app will be live at `https://paper-analyzer-xxx.vercel.app`.
-
-### Deploy to GitHub Pages
+## Run it locally
 
 ```bash
-npm run build
+git clone https://github.com/n9omi/quant-paper-reading-assistant.git
+cd quant-paper-reading-assistant
+python3 -m http.server 8000
 ```
 
-Then push the `dist/` folder, or use the GitHub Actions workflow (see below).
+Then open http://localhost:8000.
 
-## How It Works
+## Limits
 
-1. You upload a PDF
-2. The file is base64-encoded and sent to Claude's API with a structured analysis prompt
-3. Claude returns a ~8,000 token JSON object with theory, math/econ foundations at 3 depths, methodology, findings, replication plan, and improvement ideas
-4. The analysis is stored in an in-memory knowledge base
-5. You explore it across 6 tabs, toggle depth levels, and ask follow-up questions
+- Scanned PDFs without a text layer can't be read. Paste the text instead.
+- Equations are reconstructed by the model from the PDF. Check them against the paper before you build on them.
+- Paper links only work in the GitHub Pages version (Anthropic fetches the PDF); inside Claude, upload the file.
 
-## Project Structure
+## Tested
 
-```
-paper-analyzer/
-├── src/
-│   ├── App.jsx          # Main application
-│   └── main.jsx         # React entry point
-├── index.html           # HTML shell
-├── package.json         # Dependencies
-├── vite.config.js       # Build config
-└── .gitignore
-```
-
-## Testing Checklist
-
-After deploying, verify each feature works:
-
-- [ ] Upload a PDF → analysis completes without error
-- [ ] Deep Dive tab: depth toggle switches between Simple/Undergrad/Rigorous
-- [ ] Deep Dive tab: concept cards expand/collapse
-- [ ] Theory tab: summary, key concepts, and equations render
-- [ ] Methods tab: data sources, models, and pipeline render
-- [ ] Findings tab: findings, implications, limitations render
-- [ ] Replicate tab: prerequisites, timeline, phases, repo blueprint render
-- [ ] Improve tab: improvement cards with ratings render
-- [ ] "Ask AI about this paper" button opens per-paper chat
-- [ ] Chat responds with relevant answers
-- [ ] Upload a second paper → appears in sidebar
-- [ ] Back to chat → cross-paper questions work
-- [ ] Sidebar collapse/expand works
-- [ ] Remove a paper from sidebar
-- [ ] Error handling: upload a non-PDF → no crash
-
-## Built With
-
-- React 18 + Vite 5
-- Anthropic Claude API (Sonnet)
-- DM Sans + JetBrains Mono typography
+Checked in headless Chromium against three real papers (Kalman 1960, a self-similarity survey, Mallat's *Understanding Deep Convolutional Networks*): text extraction, prompt size limits, all seven tabs, math rendering, streaming, the starter-code writer, library-wide questions, rate-limit / declined-access / malformed-answer / stop handling, persistence across reloads, API headers and prompt caching, arXiv link handling, dark mode, and phone width.
 
 ## License
 
